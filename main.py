@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.lib.function_base import copy
 import imutils
 import cv2
 import argparse
@@ -15,53 +16,49 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
     transformedImage = np.fft.fft2(image)
     transformedAndShiftedImage = np.fft.fftshift(transformedImage)
 
-    if visualize:
-        # compute the magnitude spectrum of the transform
-        magnitude = 20 * np.log(np.abs(transformedImage))
-        shiftedMagnitude = 20 * np.log(np.abs(transformedAndShiftedImage))
-        # display the original input image
-        (fig, ax) = plt.subplots(1, 3, )
-        ax[0].imshow(image, cmap="gray")
-        ax[0].set_title("Input")
-        ax[0].set_xticks([])
-        ax[0].set_yticks([])
-        # display the magnitude image
-        ax[1].imshow(magnitude, cmap="gray")
-        ax[1].set_title("Magnitude Spectrum")
-        ax[1].set_xticks([])
-        ax[1].set_yticks([])
-        # display the magnitude image
-        ax[2].imshow(shiftedMagnitude, cmap="gray")
-        ax[2].set_title("Shifted Magnitude Spectrum")
-        ax[2].set_xticks([])
-        ax[2].set_yticks([])
-        # show our plots
-        plt.show()
-
-    transformedAndShiftedImage[cY - frequencyThreshold:cY + frequencyThreshold, cX - frequencyThreshold:cX + frequencyThreshold] = 0
-    transformedImage = np.fft.ifftshift(transformedAndShiftedImage)
-    reconstructedImage = np.fft.ifft2(transformedImage)
+    transformedAndShiftedImageFiltered = copy(transformedAndShiftedImage)
+    transformedAndShiftedImageFiltered[cY - frequencyThreshold:cY + frequencyThreshold, cX - frequencyThreshold:cX + frequencyThreshold] = 0
+    transformedImageFiltered = np.fft.ifftshift(transformedAndShiftedImageFiltered)
+    reconstructedImage = np.fft.ifft2(transformedImageFiltered)
 
     if visualize:
         # compute the magnitude spectrum of the transform
         magnitude = 20 * np.log(np.abs(transformedImage))
         shiftedMagnitude = 20 * np.log(np.abs(transformedAndShiftedImage))
         # display the original input image
-        (fig, ax) = plt.subplots(1, 3, )
-        ax[0].imshow(shiftedMagnitude, cmap="gray")
-        ax[0].set_title("Shifted Magnitude Spectrum")
-        ax[0].set_xticks([])
-        ax[0].set_yticks([])
+        (fig, ax) = plt.subplots(2, 3, )
+        ax[0,0].imshow(image, cmap="gray")
+        ax[0,0].set_title("Shifted Magnitude Spectrum")
+        ax[0,0].set_xticks([])
+        ax[0,0].set_yticks([])
         # display the magnitude image
-        ax[1].imshow(magnitude, cmap="gray")
-        ax[1].set_title("Magnitude Spectrum")
-        ax[1].set_xticks([])
-        ax[1].set_yticks([])
+        ax[0,1].imshow(magnitude, cmap="gray")
+        ax[0,1].set_title("Magnitude Spectrum")
+        ax[0,1].set_xticks([])
+        ax[0,1].set_yticks([])
         # display the magnitude image
-        ax[2].imshow(np.abs(reconstructedImage), cmap="gray")
-        ax[2].set_title("Reconstructed Input")
-        ax[2].set_xticks([])
-        ax[2].set_yticks([])
+        ax[0,2].imshow(shiftedMagnitude, cmap="gray")
+        ax[0,2].set_title("Reconstructed Input")
+        ax[0,2].set_xticks([])
+        ax[0,2].set_yticks([])
+        # compute the magnitude spectrum of the transform
+        magnitude = 20 * np.log(np.abs(transformedImageFiltered))
+        shiftedMagnitude = 20 * np.log(np.abs(transformedAndShiftedImageFiltered))
+
+        ax[1,0].imshow(shiftedMagnitude, cmap="gray")
+        ax[1,0].set_title("Shifted Magnitude Spectrum")
+        ax[1,0].set_xticks([])
+        ax[1,0].set_yticks([])
+        # d1splay the magnitude image
+        ax[1,1].imshow(magnitude, cmap="gray")
+        ax[1,1].set_title("Magnitude Spectrum")
+        ax[1,1].set_xticks([])
+        ax[1,1].set_yticks([])
+        # d1splay the magnitude image
+        ax[1,2].imshow(np.abs(reconstructedImage), cmap="gray")
+        ax[1,2].set_title("Reconstructed Input")
+        ax[1,2].set_xticks([])
+        ax[1,2].set_yticks([])
         # show our plots
         plt.show()
 
