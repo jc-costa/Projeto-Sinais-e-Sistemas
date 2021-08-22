@@ -28,7 +28,7 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
         # display the original input image
         (fig, ax) = plt.subplots(2, 3, )
         ax[0,0].imshow(image, cmap="gray")
-        ax[0,0].set_title("Shifted Magnitude Spectrum")
+        ax[0,0].set_title("Input")
         ax[0,0].set_xticks([])
         ax[0,0].set_yticks([])
         # display the magnitude image
@@ -38,7 +38,7 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
         ax[0,1].set_yticks([])
         # display the magnitude image
         ax[0,2].imshow(shiftedMagnitude, cmap="gray")
-        ax[0,2].set_title("Reconstructed Input")
+        ax[0,2].set_title("Shifted Magnitude Spectrum")
         ax[0,2].set_xticks([])
         ax[0,2].set_yticks([])
         # compute the magnitude spectrum of the transform
