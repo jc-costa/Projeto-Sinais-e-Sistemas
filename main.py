@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.lib.function_base import copy
@@ -5,12 +6,15 @@ import imutils
 import cv2
 import argparse
 
+from numpy.lib.npyio import save
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--image", type=str, required=True)
 parser.add_argument("-f", "--filter-threshold", dest="filterThreshold", type=int, default=60)
 parser.add_argument("-v", "--visualize", action="store_true")
+parser.add_argument("-s", "--save-reconstructed", dest="saveReconstructed", action="store_true")
 
-def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
+def applyHighPassFilter(image, frequencyThreshold, visualize=False):
     height, width = image.shape
     cX, cY = (int(width/2.0), int(height/2.0))
 
@@ -63,8 +67,10 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
         # show our plots
         plt.show()
 
+    return reconstructedImage
 
-    magnitude = 20 * np.log(np.abs(reconstructedImage))
+def detectBlur(filteredImage, blurrinessThreshold):
+    magnitude = 20 * np.log(np.abs(filteredImage))
     mean = np.mean(magnitude)
 
     return mean, mean <= blurrinessThreshold
@@ -72,7 +78,12 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
 
 args = parser.parse_args()
 originalImage = cv2.imread(args.image)
-originalImage = imutils.resize(originalImage, width=500)
+#originalImage = imutils.resize(originalImage, width=500)
 grayScaleImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
 
-print(detectBlur(grayScaleImage, frequencyThreshold=args.filterThreshold, blurrinessThreshold=10, visualize=args.visualize))
+filteredImage = applyHighPassFilter(grayScaleImage, frequencyThreshold=args.filterThreshold, visualize=args.visualize)
+
+if args.saveReconstructed:
+    plt.imsave(f"reconstructedImage/{os.path.basename(args.image)}", 255-np.abs(filteredImage), cmap="gray")
+
+print(detectBlur(filteredImage, blurrinessThreshold=10))
