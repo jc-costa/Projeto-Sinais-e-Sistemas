@@ -75,15 +75,25 @@ def detectBlur(filteredImage, blurrinessThreshold):
 
     return mean, mean <= blurrinessThreshold
 
+def saveImageName(imageName):
+    splitName = imageName.split('.')
+    firstName = ''.join(splitName[:-1])
+    firstName += '-high-filter'
+    extension = splitName[-1]
+    return '.'.join([firstName, extension])
 
 args = parser.parse_args()
 originalImage = cv2.imread(args.image)
 #originalImage = imutils.resize(originalImage, width=500)
 grayScaleImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
 
-filteredImage = applyHighPassFilter(grayScaleImage, frequencyThreshold=args.filterThreshold, visualize=args.visualize)
+filteredImage = applyHighPassFilter(grayScaleImage, args.filterThreshold, visualize=args.visualize)
+
+mean, isBlurred= detectBlur(filteredImage, blurrinessThreshold=10)
+print(mean, isBlurred)
 
 if args.saveReconstructed:
-    plt.imsave(f"reconstructedImage/{os.path.basename(args.image)}", 255-np.abs(filteredImage), cmap="gray")
-
-print(detectBlur(filteredImage, blurrinessThreshold=10))
+    reconstructedImageName = saveImageName(args.image)
+    print(reconstructedImageName)
+    reconstructedImage = 255-np.abs(filteredImage)
+    cv2.imwrite(reconstructedImageName, reconstructedImage)
