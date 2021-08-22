@@ -12,9 +12,17 @@ from numpy.lib.npyio import save
 
 BLURRINESS_THRESHOLD = 10
 
+def get_mask_generator(mask_generator):
+    if args.mask_generator == "rectangular":
+        return rectangular_mask
+    elif args.mask_generator == "circular":
+        return circular_mask
+    else:
+        raise ValueError("Mask generator (-m/--mask-generator) must be either 'rectangular' or 'circular'.")
+
 
 def run_single(args):
-    filtered_image = get_filtered_image(args.image, args.filter_threshold, args.visualize)
+    filtered_image = get_filtered_image(args.image, args.filter_threshold, get_mask_generator(args.mask_generator), args.visualize)
     if args.save_reconstructed:
         reconstructed_image_name = save_image_name(args.image)
         reconstructed_image = 255-np.abs(filtered_image)
@@ -23,7 +31,7 @@ def run_single(args):
 
 def run_batch(args):
     images_names = [os.path.join(args.folder, f) for f in os.listdir(args.folder) if os.path.isfile(os.path.join(args.folder, f))]
-    get_and_save_detect_blur_data(images_names, args.filter_threshold)
+    get_and_save_detect_blur_data(images_names, args.filter_threshold, get_mask_generator(args.mask_generator))
 
 
 parser = argparse.ArgumentParser()
@@ -32,25 +40,43 @@ subparsers = parser.add_subparsers()
 parser_batch = subparsers.add_parser('batch')
 parser_batch.add_argument("-f", "--folder", type=str, required=True)
 parser_batch.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, nargs="+")
+parser_batch.add_argument("-m", "--mask-generator", dest="mask_generator", type=str, default="rectangular")
 parser_batch.set_defaults(func=run_batch)
 
 parser_single = subparsers.add_parser('single')
 parser_single.add_argument("-i", "--image", type=str, required=True)
 parser_single.add_argument("-v", "--visualize", action="store_true")
 parser_single.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, default=60)
+parser_single.add_argument("-m", "--mask-generator", dest="mask_generator", type=str, default="rectangular")
 parser_single.add_argument("-s", "--save-reconstructed", dest="save_reconstructed", action="store_true")
 parser_single.set_defaults(func=run_single)
 
+def circular_mask(height, width, r):
+    mask = np.ones((height, width))
+    center = (int(height/2), int(width/2))
+    x, y = np.ogrid[:height,:width]
+    mask_area = (x - center[0])**2 + (y - center[1])**2 <= r**2
+    mask[mask_area] = 0
+    return mask
 
-def apply_high_pass_filter(image, frequency_threshold, visualize=False):
+
+def rectangular_mask(height, width, side):
+    mask = np.ones((height, width))
+    center = (int(height/2), int(width/2))
+    mask[center[0]-side:center[0]+side, center[1]-side:center[1]+side] = 0
+    return mask
+
+
+def apply_high_pass_filter(image, frequency_threshold, mask_generator=rectangular_mask, visualize=False):
     height, width = image.shape
     cX, cY = (int(width/2.0), int(height/2.0))
 
     transformed_image = np.fft.fft2(image)
     transformed_and_shifted_image = np.fft.fftshift(transformed_image)
 
-    transformed_and_shifted_image_filtered = copy(transformed_and_shifted_image)
-    transformed_and_shifted_image_filtered[cY - frequency_threshold:cY + frequency_threshold, cX - frequency_threshold:cX + frequency_threshold] = 0
+    mask = mask_generator(height, width, frequency_threshold)
+
+    transformed_and_shifted_image_filtered = transformed_and_shifted_image * mask
     transformed_image_filtered = np.fft.ifftshift(transformed_and_shifted_image_filtered)
     reconstructed_image = np.fft.ifft2(transformed_image_filtered)
 
@@ -114,15 +140,15 @@ def save_image_name(image_name):
     return '.'.join(['reconstructed' + first_name, extension])
 
 
-def get_filtered_image(image, filter_threshold, visualize):
+def get_filtered_image(image, filter_threshold, mask_generator, visualize):
     original_image = cv2.imread(image)
     gray_scale_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 
-    filtered_image = apply_high_pass_filter(gray_scale_image, filter_threshold, visualize=visualize)
+    filtered_image = apply_high_pass_filter(gray_scale_image, filter_threshold, mask_generator, visualize=visualize)
     return filtered_image
 
 
-def get_and_save_detect_blur_data(images_names, filter_thresholds):
+def get_and_save_detect_blur_data(images_names, filter_thresholds, mask_generator):
     is_image_blur = ['blur' in image_name for image_name in images_names]
     detect_blur_data = {
         'name': images_names,
@@ -132,7 +158,7 @@ def get_and_save_detect_blur_data(images_names, filter_thresholds):
         images_score = []
         wc_column_name = f'wc={filter_threshold}'
         for image_name in images_names:
-            filtered_image = get_filtered_image(image_name, filter_threshold, False)
+            filtered_image = get_filtered_image(image_name, filter_threshold, mask_generator, False)
             score, is_blur = detect_blur(filtered_image)
             images_score.append(score)
         detect_blur_data[wc_column_name] = images_score
