@@ -31,7 +31,7 @@ subparsers = parser.add_subparsers()
 
 parser_batch = subparsers.add_parser('batch')
 parser_batch.add_argument("-f", "--folder", type=str, required=True)
-parser_batch.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, default=60)
+parser_batch.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, nargs="+")
 parser_batch.set_defaults(func=run_batch)
 
 parser_single = subparsers.add_parser('single')
@@ -122,18 +122,20 @@ def get_filtered_image(image, filter_threshold, visualize):
     return filtered_image
 
 
-def get_and_save_detect_blur_data(images_names, filter_threshold):
-    images_score = []
-    image_predicted_blur = []
-    is_image_blur = []
-    for image_name in images_names:
-        filtered_image = get_filtered_image(image_name, filter_threshold, False)
-        score, is_blur = detect_blur(filtered_image)
-        images_score.append(score)
-        image_predicted_blur.append(is_blur)
-        is_image_blur.append('blur' in image_name )
-    
-    detect_blur_data = {'name': images_names, 'score': images_score, 'is_image_blur': is_image_blur, 'image_predicted_blur':image_predicted_blur }
+def get_and_save_detect_blur_data(images_names, filter_thresholds):
+    is_image_blur = ['blur' in image_name for image_name in images_names]
+    detect_blur_data = {
+        'name': images_names,
+        'is_image_blur': is_image_blur,
+    }
+    for filter_threshold in filter_thresholds:
+        images_score = []
+        wc_column_name = f'wc={filter_threshold}'
+        for image_name in images_names:
+            filtered_image = get_filtered_image(image_name, filter_threshold, False)
+            score, is_blur = detect_blur(filtered_image)
+            images_score.append(score)
+        detect_blur_data[wc_column_name] = images_score
     blur_detection_df = pd.DataFrame(data=detect_blur_data)
     blur_detection_df.to_csv('blur_detection_data.csv')
 
