@@ -67,12 +67,24 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
     magnitude = 20 * np.log(np.abs(reconstructedImage))
     mean = np.mean(magnitude)
 
-    return mean, mean <= blurrinessThreshold
+    return mean, mean <= blurrinessThreshold, reconstructedImage
 
+def saveImageName(imageName):
+    splitName = imageName.split('.')
+    firstName = ''.join(splitName[:-1])
+    firstName += '-high-filter'
+    extension = splitName[-1]
+    return '.'.join([firstName, extension])
 
 args = parser.parse_args()
 originalImage = cv2.imread(args.image)
 originalImage = imutils.resize(originalImage, width=500)
 grayScaleImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
 
-print(detectBlur(grayScaleImage, frequencyThreshold=args.filterThreshold, blurrinessThreshold=10, visualize=args.visualize))
+mean, isBlurred, reconstructedImage = detectBlur(grayScaleImage, frequencyThreshold=args.filterThreshold, blurrinessThreshold=10, visualize=args.visualize)
+print(mean, isBlurred)
+
+reconstructedImageName = saveImageName(args.image)
+print(reconstructedImageName)
+reconstructedImage = 255-np.abs(reconstructedImage)
+cv2.imwrite(reconstructedImageName, reconstructedImage)
