@@ -10,26 +10,26 @@ from numpy.lib.npyio import save
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--image", type=str, required=True)
-parser.add_argument("-f", "--filter-threshold", dest="filterThreshold", type=int, default=60)
+parser.add_argument("-f", "--filter-threshold", dest="filter_threshold", type=int, default=60)
 parser.add_argument("-v", "--visualize", action="store_true")
-parser.add_argument("-s", "--save-reconstructed", dest="saveReconstructed", action="store_true")
+parser.add_argument("-s", "--save-reconstructed", dest="save_reconstructed", action="store_true")
 
-def applyHighPassFilter(image, frequencyThreshold, visualize=False):
+def apply_high_pass_filter(image, frequency_threshold, visualize=False):
     height, width = image.shape
     cX, cY = (int(width/2.0), int(height/2.0))
 
-    transformedImage = np.fft.fft2(image)
-    transformedAndShiftedImage = np.fft.fftshift(transformedImage)
+    transformed_image = np.fft.fft2(image)
+    transformed_and_shifted_image = np.fft.fftshift(transformed_image)
 
-    transformedAndShiftedImageFiltered = copy(transformedAndShiftedImage)
-    transformedAndShiftedImageFiltered[cY - frequencyThreshold:cY + frequencyThreshold, cX - frequencyThreshold:cX + frequencyThreshold] = 0
-    transformedImageFiltered = np.fft.ifftshift(transformedAndShiftedImageFiltered)
-    reconstructedImage = np.fft.ifft2(transformedImageFiltered)
+    transformed_and_shifted_image_filtered = copy(transformed_and_shifted_image)
+    transformed_and_shifted_image_filtered[cY - frequency_threshold:cY + frequency_threshold, cX - frequency_threshold:cX + frequency_threshold] = 0
+    transformed_image_filtered = np.fft.ifftshift(transformed_and_shifted_image_filtered)
+    reconstructed_image = np.fft.ifft2(transformed_image_filtered)
 
     if visualize:
         # compute the magnitude spectrum of the transform
-        magnitude = 20 * np.log(np.abs(transformedImage))
-        shiftedMagnitude = 20 * np.log(np.abs(transformedAndShiftedImage))
+        magnitude = 20 * np.log(np.abs(transformed_image))
+        shifted_magnitude = 20 * np.log(np.abs(transformed_and_shifted_image))
         # display the original input image
         (fig, ax) = plt.subplots(2, 3, )
         ax[0,0].imshow(image, cmap="gray")
@@ -42,15 +42,15 @@ def applyHighPassFilter(image, frequencyThreshold, visualize=False):
         ax[0,1].set_xticks([])
         ax[0,1].set_yticks([])
         # display the magnitude image
-        ax[0,2].imshow(shiftedMagnitude, cmap="gray")
+        ax[0,2].imshow(shifted_magnitude, cmap="gray")
         ax[0,2].set_title("Shifted Magnitude Spectrum")
         ax[0,2].set_xticks([])
         ax[0,2].set_yticks([])
         # compute the magnitude spectrum of the transform
-        magnitude = 20 * np.log(np.abs(transformedImageFiltered))
-        shiftedMagnitude = 20 * np.log(np.abs(transformedAndShiftedImageFiltered))
+        magnitude = 20 * np.log(np.abs(transformed_image_filtered))
+        shifted_magnitude = 20 * np.log(np.abs(transformed_and_shifted_image_filtered))
 
-        ax[1,0].imshow(shiftedMagnitude, cmap="gray")
+        ax[1,0].imshow(shifted_magnitude, cmap="gray")
         ax[1,0].set_title("Shifted Magnitude Spectrum")
         ax[1,0].set_xticks([])
         ax[1,0].set_yticks([])
@@ -60,23 +60,23 @@ def applyHighPassFilter(image, frequencyThreshold, visualize=False):
         ax[1,1].set_xticks([])
         ax[1,1].set_yticks([])
         # d1splay the magnitude image
-        ax[1,2].imshow(255-np.abs(reconstructedImage), cmap="gray")
+        ax[1,2].imshow(255-np.abs(reconstructed_image), cmap="gray")
         ax[1,2].set_title("Reconstructed Input")
         ax[1,2].set_xticks([])
         ax[1,2].set_yticks([])
         # show our plots
         plt.show()
 
-    return reconstructedImage
+    return reconstructed_image
 
-def detectBlur(filteredImage, blurrinessThreshold):
-    magnitude = 20 * np.log(np.abs(filteredImage))
+def detect_blur(filtered_image, blurriness_threshold):
+    magnitude = 20 * np.log(np.abs(filtered_image))
     mean = np.mean(magnitude)
 
-    return mean, mean <= blurrinessThreshold
+    return mean, mean <= blurriness_threshold
 
-def saveImageName(imageName):
-    splitName = imageName.split('.')
+def save_image_name(image_name):
+    splitName = image_name.split('.')
     firstName = ''.join(splitName[:-1])
     firstName += '-high-filter'
     first_name = firstName[0].upper() + firstName[1:]
@@ -84,17 +84,17 @@ def saveImageName(imageName):
     return '.'.join(['reconstructed' + first_name, extension])
 
 args = parser.parse_args()
-originalImage = cv2.imread(args.image)
+original_image = cv2.imread(args.image)
 #originalImage = imutils.resize(originalImage, width=500)
-grayScaleImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
+gray_scale_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 
-filteredImage = applyHighPassFilter(grayScaleImage, args.filterThreshold, visualize=args.visualize)
+filtered_image = apply_high_pass_filter(gray_scale_image, args.filter_threshold, visualize=args.visualize)
 
-mean, isBlurred= detectBlur(filteredImage, blurrinessThreshold=10)
-print(mean, isBlurred)
+mean, is_blurred= detect_blur(filtered_image, blurriness_threshold=10)
+print(mean, is_blurred)
 
-if args.saveReconstructed:
-    reconstructedImageName = saveImageName(args.image)
-    print(reconstructedImageName)
-    reconstructedImage = 255-np.abs(filteredImage)
-    plt.imsave(reconstructedImageName, reconstructedImage, cmap="gray")
+if args.save_reconstructed:
+    reconstructed_image_name = save_image_name(args.image)
+    print(reconstructed_image_name)
+    reconstructed_image = 255-np.abs(filtered_image)
+    plt.imsave(reconstructed_image_name, reconstructed_image, cmap="gray")
