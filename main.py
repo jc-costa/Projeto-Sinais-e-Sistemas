@@ -79,8 +79,9 @@ def saveImageName(imageName):
     splitName = imageName.split('.')
     firstName = ''.join(splitName[:-1])
     firstName += '-high-filter'
+    first_name = firstName[0].upper() + firstName[1:]
     extension = splitName[-1]
-    return '.'.join([firstName, extension])
+    return '.'.join(['reconstructed' + first_name, extension])
 
 args = parser.parse_args()
 originalImage = cv2.imread(args.image)
@@ -96,4 +97,4 @@ if args.saveReconstructed:
     reconstructedImageName = saveImageName(args.image)
     print(reconstructedImageName)
     reconstructedImage = 255-np.abs(filteredImage)
-    cv2.imwrite(reconstructedImageName, reconstructedImage)
+    plt.imsave(reconstructedImageName, reconstructedImage, cmap="gray")
