@@ -76,12 +76,12 @@ def detect_blur(filtered_image, blurriness_threshold):
     return mean, mean <= blurriness_threshold
 
 def save_image_name(image_name):
-    splitName = image_name.split('.')
-    firstName = ''.join(splitName[:-1])
-    firstName += '-high-filter'
-    first_name = firstName[0].upper() + firstName[1:]
-    extension = splitName[-1]
-    return '.'.join(['reconstructed' + first_name, extension])
+    split_name = image_name.split('.')
+    first_name = ''.join(split_name[:-1])
+    first_name += '-high-filter'
+    first_name_capitalize = first_name[0].upper() + first_name[1:]
+    extension = split_name[-1]
+    return '.'.join(['reconstructed' + first_name_capitalize, extension])
 
 args = parser.parse_args()
 original_image = cv2.imread(args.image)
