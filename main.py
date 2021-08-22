@@ -55,7 +55,7 @@ def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
         ax[1,1].set_xticks([])
         ax[1,1].set_yticks([])
         # d1splay the magnitude image
-        ax[1,2].imshow(np.abs(reconstructedImage), cmap="gray")
+        ax[1,2].imshow(255-np.abs(reconstructedImage), cmap="gray")
         ax[1,2].set_title("Reconstructed Input")
         ax[1,2].set_xticks([])
         ax[1,2].set_yticks([])
