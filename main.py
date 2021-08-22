@@ -2,17 +2,45 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.lib.function_base import copy
-import imutils
+# import imutils
 import cv2
 import argparse
+import pandas as pd
 
 from numpy.lib.npyio import save
 
+
+BLURRINESS_THRESHOLD = 10
+
+
+def run_single(args):
+    filtered_image = get_filtered_image(args.image, args.filter_threshold, args.visualize)
+    if args.save_reconstructed:
+        reconstructed_image_name = save_image_name(args.image)
+        reconstructed_image = 255-np.abs(filtered_image)
+        plt.imsave(reconstructed_image_name, reconstructed_image, cmap="gray")
+
+
+def run_batch(args):
+    images_names = [os.path.join(args.folder, f) for f in os.listdir(args.folder) if os.path.isfile(os.path.join(args.folder, f))]
+    get_and_save_detect_blur_data(images_names, args.filter_threshold)
+
+
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--image", type=str, required=True)
-parser.add_argument("-f", "--filter-threshold", dest="filter_threshold", type=int, default=60)
-parser.add_argument("-v", "--visualize", action="store_true")
-parser.add_argument("-s", "--save-reconstructed", dest="save_reconstructed", action="store_true")
+subparsers = parser.add_subparsers()
+
+parser_batch = subparsers.add_parser('batch')
+parser_batch.add_argument("-f", "--folder", type=str, required=True)
+parser_batch.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, default=60)
+parser_batch.set_defaults(func=run_batch)
+
+parser_single = subparsers.add_parser('single')
+parser_single.add_argument("-i", "--image", type=str, required=True)
+parser_single.add_argument("-v", "--visualize", action="store_true")
+parser_single.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, default=60)
+parser_single.add_argument("-s", "--save-reconstructed", dest="save_reconstructed", action="store_true")
+parser_single.set_defaults(func=run_single)
+
 
 def apply_high_pass_filter(image, frequency_threshold, visualize=False):
     height, width = image.shape
@@ -69,11 +97,13 @@ def apply_high_pass_filter(image, frequency_threshold, visualize=False):
 
     return reconstructed_image
 
-def detect_blur(filtered_image, blurriness_threshold):
+
+def detect_blur(filtered_image):
     magnitude = 20 * np.log(np.abs(filtered_image))
     mean = np.mean(magnitude)
 
-    return mean, mean <= blurriness_threshold
+    return mean, mean <= BLURRINESS_THRESHOLD
+
 
 def save_image_name(image_name):
     split_name = image_name.split('.')
@@ -83,18 +113,30 @@ def save_image_name(image_name):
     extension = split_name[-1]
     return '.'.join(['reconstructed' + first_name, extension])
 
+
+def get_filtered_image(image, filter_threshold, visualize):
+    original_image = cv2.imread(image)
+    gray_scale_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
+
+    filtered_image = apply_high_pass_filter(gray_scale_image, filter_threshold, visualize=visualize)
+    return filtered_image
+
+
+def get_and_save_detect_blur_data(images_names, filter_threshold):
+    images_score = []
+    image_predicted_blur = []
+    is_image_blur = []
+    for image_name in images_names:
+        filtered_image = get_filtered_image(image_name, filter_threshold, False)
+        score, is_blur = detect_blur(filtered_image)
+        images_score.append(score)
+        image_predicted_blur.append(is_blur)
+        is_image_blur.append('blur' in image_name )
+    
+    detect_blur_data = {'name': images_names, 'score': images_score, 'is_image_blur': is_image_blur, 'image_predicted_blur':image_predicted_blur }
+    blur_detection_df = pd.DataFrame(data=detect_blur_data)
+    blur_detection_df.to_csv('blur_detection_data.csv')
+
+
 args = parser.parse_args()
-original_image = cv2.imread(args.image)
-#originalImage = imutils.resize(originalImage, width=500)
-gray_scale_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-
-filtered_image = apply_high_pass_filter(gray_scale_image, args.filter_threshold, visualize=args.visualize)
-
-mean, is_blurred= detect_blur(filtered_image, blurriness_threshold=10)
-print(mean, is_blurred)
-
-if args.save_reconstructed:
-    reconstructed_image_name = save_image_name(args.image)
-    print(reconstructed_image_name)
-    reconstructed_image = 255-np.abs(filtered_image)
-    plt.imsave(reconstructed_image_name, reconstructed_image, cmap="gray")
+args.func(args)
