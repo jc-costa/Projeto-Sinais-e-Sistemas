@@ -7,6 +7,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--image", type=str, required=True)
+parser.add_argument("-f", "--filter-threshold", dest="filterThreshold", type=int, default=60)
 parser.add_argument("-v", "--visualize", action="store_true")
 
 def detectBlur(image, frequencyThreshold, blurrinessThreshold, visualize=False):
@@ -74,4 +75,4 @@ originalImage = cv2.imread(args.image)
 originalImage = imutils.resize(originalImage, width=500)
 grayScaleImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
 
-print(detectBlur(grayScaleImage, frequencyThreshold=60, blurrinessThreshold=10, visualize=args.visualize))
+print(detectBlur(grayScaleImage, frequencyThreshold=args.filterThreshold, blurrinessThreshold=10, visualize=args.visualize))
