@@ -67,6 +67,33 @@ def rectangular_mask(height, width, side):
     return mask
 
 
+def show_image(ax, image, title):
+    ax.imshow(image, cmap="gray")
+    ax.set_title(title)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+
+def visualize_high_pass_filter(image, transformed_image, transformed_and_shifted_image, transformed_and_shifted_image_filtered, transformed_image_filtered, reconstructed_image):
+    # compute the magnitude spectrum of the transform
+    magnitude = 20 * np.log(np.abs(transformed_image))
+    shifted_magnitude = 20 * np.log(np.abs(transformed_and_shifted_image))
+    # display the original input image
+    (fig, ax) = plt.subplots(2, 3, )
+    show_image(ax[0,0], image, "Input")
+    show_image(ax[0,1], magnitude, "Magnitude Spectrum")
+    show_image(ax[0,2], shifted_magnitude, "Shifted Magnitude Spectrum")
+
+    magnitude = 20 * np.log(np.abs(transformed_image_filtered))
+    shifted_magnitude = 20 * np.log(np.abs(transformed_and_shifted_image_filtered))
+
+    show_image(ax[1,0], shifted_magnitude, "Shifted Magnitude Spectrum")
+    show_image(ax[1,1], magnitude, "Magnitude Spectrum")
+    show_image(ax[1,2], 255-np.abs(reconstructed_image), "Reconstructed Input")
+
+    plt.show()
+
+
 def apply_high_pass_filter(image, frequency_threshold, mask_generator=rectangular_mask, visualize=False):
     height, width = image.shape
     cX, cY = (int(width/2.0), int(height/2.0))
@@ -81,45 +108,7 @@ def apply_high_pass_filter(image, frequency_threshold, mask_generator=rectangula
     reconstructed_image = np.fft.ifft2(transformed_image_filtered)
 
     if visualize:
-        # compute the magnitude spectrum of the transform
-        magnitude = 20 * np.log(np.abs(transformed_image))
-        shifted_magnitude = 20 * np.log(np.abs(transformed_and_shifted_image))
-        # display the original input image
-        (fig, ax) = plt.subplots(2, 3, )
-        ax[0,0].imshow(image, cmap="gray")
-        ax[0,0].set_title("Input")
-        ax[0,0].set_xticks([])
-        ax[0,0].set_yticks([])
-        # display the magnitude image
-        ax[0,1].imshow(magnitude, cmap="gray")
-        ax[0,1].set_title("Magnitude Spectrum")
-        ax[0,1].set_xticks([])
-        ax[0,1].set_yticks([])
-        # display the magnitude image
-        ax[0,2].imshow(shifted_magnitude, cmap="gray")
-        ax[0,2].set_title("Shifted Magnitude Spectrum")
-        ax[0,2].set_xticks([])
-        ax[0,2].set_yticks([])
-        # compute the magnitude spectrum of the transform
-        magnitude = 20 * np.log(np.abs(transformed_image_filtered))
-        shifted_magnitude = 20 * np.log(np.abs(transformed_and_shifted_image_filtered))
-
-        ax[1,0].imshow(shifted_magnitude, cmap="gray")
-        ax[1,0].set_title("Shifted Magnitude Spectrum")
-        ax[1,0].set_xticks([])
-        ax[1,0].set_yticks([])
-        # d1splay the magnitude image
-        ax[1,1].imshow(magnitude, cmap="gray")
-        ax[1,1].set_title("Magnitude Spectrum")
-        ax[1,1].set_xticks([])
-        ax[1,1].set_yticks([])
-        # d1splay the magnitude image
-        ax[1,2].imshow(255-np.abs(reconstructed_image), cmap="gray")
-        ax[1,2].set_title("Reconstructed Input")
-        ax[1,2].set_xticks([])
-        ax[1,2].set_yticks([])
-        # show our plots
-        plt.show()
+        visualize_high_pass_filter(image, transformed_image, transformed_and_shifted_image, transformed_and_shifted_image_filtered, transformed_image_filtered, reconstructed_image)
 
     return reconstructed_image
 
