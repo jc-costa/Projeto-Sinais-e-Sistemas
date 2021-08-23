@@ -1,3 +1,9 @@
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![OpenCV](https://img.shields.io/badge/opencv-%23white.svg?style=for-the-badge&logo=opencv&logoColor=white)
+![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
+![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
+
+
 # Projeto-Sinais-e-Sistemas
 
 Detecção de imagens borradas usando FFT e filtro passa-alta.
@@ -48,3 +54,7 @@ Onde
 1. **name** é o nome do arquivo de cada imagem
 2. **is_image_blur** é se a imagem está etiquetada como borrada ou não
 3. **wc=<omega_ci>** é a média das intensidades dos pixels da imagem quando é usado o valor i dos omega_cs passados para o programa
+
+
+Esse projeto será melhor apreciado com essa música: [![YouTube Music](https://img.shields.io/badge/YouTube_Music-FF0000?style=for-the-badge&logo=youtube-music&logoColor=white)](https://www.youtube.com/watch?v=68ugkg9RePc&ab_channel=BlissCorporation)
+
