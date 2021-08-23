@@ -56,5 +56,6 @@ Onde
 3. **wc=<omega_ci>** é a média das intensidades dos pixels da imagem quando é usado o valor i dos omega_cs passados para o programa
 
 
-Esse projeto será melhor apreciado com essa música: [![YouTube Music](https://img.shields.io/badge/YouTube_Music-FF0000?style=for-the-badge&logo=youtube-music&logoColor=white)](https://www.youtube.com/watch?v=68ugkg9RePc&ab_channel=BlissCorporation)
+## Soundtrack
+[![YouTube Music](https://img.shields.io/badge/YouTube_Music-FF0000?style=for-the-badge&logo=youtube-music&logoColor=white)](https://www.youtube.com/watch?v=68ugkg9RePc&ab_channel=BlissCorporation)
 
