@@ -114,7 +114,7 @@ def apply_high_pass_filter(image, frequency_threshold, mask_generator=rectangula
 
 
 def detect_blur(filtered_image):
-    magnitude = 20 * np.log(np.abs(filtered_image))
+    magnitude = np.abs(filtered_image)
     mean = np.mean(magnitude)
 
     return mean, mean <= BLURRINESS_THRESHOLD
