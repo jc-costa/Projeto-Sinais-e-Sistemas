@@ -10,7 +10,7 @@ import pandas as pd
 from numpy.lib.npyio import save
 
 
-BLURRINESS_THRESHOLD = 10
+BLURRINESS_THRESHOLD = 1.2805228893466365
 
 def get_mask_generator(mask_generator):
     if args.mask_generator == "rectangular":
@@ -22,7 +22,9 @@ def get_mask_generator(mask_generator):
 
 
 def run_single(args):
+    BLURRINESS_THRESHOLD = args.Bc
     filtered_image = get_filtered_image(args.image, args.filter_threshold, get_mask_generator(args.mask_generator), args.visualize)
+    print(detect_blur(filtered_image)[1])
     if args.save_reconstructed:
         reconstructed_image_name = save_image_name(args.image)
         reconstructed_image = 255-np.abs(filtered_image)
@@ -46,7 +48,8 @@ parser_batch.set_defaults(func=run_batch)
 parser_single = subparsers.add_parser('single')
 parser_single.add_argument("-i", "--image", type=str, required=True)
 parser_single.add_argument("-v", "--visualize", action="store_true")
-parser_single.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, default=60)
+parser_single.add_argument("-t", "--filter-threshold", dest="filter_threshold", type=int, default=250)
+parser_single.add_argument("-B", "--Bc", dest="Bc", type=float, default=1.2805228893466365)
 parser_single.add_argument("-m", "--mask-generator", dest="mask_generator", type=str, default="rectangular")
 parser_single.add_argument("-s", "--save-reconstructed", dest="save_reconstructed", action="store_true")
 parser_single.set_defaults(func=run_single)
