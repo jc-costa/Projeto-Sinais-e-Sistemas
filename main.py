@@ -24,7 +24,7 @@ def get_mask_generator(mask_generator):
 def run_single(args):
     BLURRINESS_THRESHOLD = args.Bc
     filtered_image = get_filtered_image(args.image, args.filter_threshold, get_mask_generator(args.mask_generator), args.visualize)
-    print(detect_blur(filtered_image)[1])
+    print(interpret_result(detect_blur(filtered_image)[1]))
     if args.save_reconstructed:
         reconstructed_image_name = save_image_name(args.image)
         reconstructed_image = 255-np.abs(filtered_image)
@@ -121,6 +121,13 @@ def detect_blur(filtered_image):
     mean = np.mean(magnitude)
 
     return mean, mean <= BLURRINESS_THRESHOLD
+
+
+def interpret_result(result):
+    if result == True:
+        return "The image is blurred"
+    else:
+        return "The image is clear"
 
 
 def save_image_name(image_name):
