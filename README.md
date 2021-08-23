@@ -20,6 +20,16 @@ O filtro passa-alta depende de uma frequência de corte omega_c, e a imagem resu
 
 Para determinar essas constantes, nós testamos com o banco de imagens disponibilizado, buscando encontrar um omega_c e B_c que permita a maior separação dos casos disponíveis. Esse teste pode ser feito usando essa ferramenta caso deseje-se encontrar diferentes valores dos que sugerimos.
 
+## Visão geral do projeto
+
+O projeto é composto por um programa em python, `main.py`, que implementa uma interface de linha de comando (CLI) da aplicação sugerida.
+
+Além disso temos dois conjuntos de imagem, `imageTrainDataset` e `imageTestDataset`, ambos de imagens colecionadas de membros da equipe, algumas borradas por foco ruim na hora da foto, outras borradas posteriormente através do uso de programas de edição de imagem. O conjunto `Train` contém as imagens usadas durante o processo para determinar omega_c e B_c, enquanto que o conjunto `Test` foi usado para verificação dos resultados. Há, também, uma pasta chamada `reconstructedImageBank` na qual as imagens reconstruídas após a aplicação do filtro passa-alta podem ser salvas, caso essa opção seja escolhida.
+
+Temos, também, um jupyter notebook chamado `analysis_detection_blur.ipynb`, no qual fizemos a exploração para encontrar os valores omega_c e B_c.
+
+Temos também alguns resultados parciais na forma dos arquivos `.csv`.
+
 ## Uso
 
 Para testar se uma única imagem pode ser consideda borrada, o programa pode ser rodado como exemplificado a seguir:
@@ -51,9 +61,10 @@ O resultado desse programa será um arquivo `.csv` com o seguinte cabeçalho:
 
 Onde
 
-1. **name** é o nome do arquivo de cada imagem
-2. **is_image_blur** é se a imagem está etiquetada como borrada ou não
-3. **wc=<omega_ci>** é a média das intensidades dos pixels da imagem quando é usado o valor i dos omega_cs passados para o programa
+1. A primeira coluna é um índice gerado pelo pandas e que pode ser ignorado
+2. **name** é o nome do arquivo de cada imagem
+3. **is_image_blur** é se a imagem está etiquetada como borrada ou não
+4. **wc=<omega_ci>** é a média das intensidades dos pixels da imagem quando é usado o valor i dos omega_cs passados para o programa
 
 
 ## Soundtrack
