@@ -68,5 +68,5 @@ Onde
 
 
 ## Soundtrack
-[![YouTube Music](https://img.shields.io/badge/YouTube_Music-FF0000?style=for-the-badge&logo=youtube-music&logoColor=white)](https://youtu.be/68ugkg9RePc?t=32){:target="_blank"}
+[![YouTube Music](https://img.shields.io/badge/YouTube_Music-FF0000?style=for-the-badge&logo=youtube-music&logoColor=white)](https://youtu.be/68ugkg9RePc?t=32){:target="_blank" rel="noopener"}
 
